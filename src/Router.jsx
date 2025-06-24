@@ -11,6 +11,8 @@ import Crm from "./pages/Crm";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyCode from "./pages/VerifyCode";
 import NewPassword from "./pages/NewPassword";
+import AboutPage from "./pages/About";
+import ContactPage from "./pages/Contact";
 
 const AppRouter = () => (
   <Router>
@@ -26,6 +28,8 @@ const AppRouter = () => (
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/verify-code" element={<VerifyCode />} />
       <Route path="/new-password" element={<NewPassword />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/contact" element={<ContactPage />} />
     </Routes>
   </Router>
 );

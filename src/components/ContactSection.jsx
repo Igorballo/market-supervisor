@@ -4,8 +4,8 @@ const ContactSection = () => {
   return (
     <section className="bg-gray-50 py-16">
       <div className="flex justify-center items-center text-center mb-12">
-        <div className="flex flex-col gap-4 max-w-3xl">
-          <h3 className="text-3xl font-bold">Contactez nous ou <span className="text-blue-600">demandez de démo</span></h3>
+        <div className="flex flex-col gap-4 px-2 lg:px-0 w-full lg:max-w-3xl">
+          <h3 className="text-3xl font-bold">Contactez nous ou <span className="text-blue-700">demandez de démo</span></h3>
           <p className="text-gray-500 font-normal text-sm">Notre équipe est à votre écoute pour répondre à toutes vos préoccupations, vous accompagner dans votre projet ou vous fournir plus d’informations sur nos solutions. N’hésitez pas à nous écrire, nous vous répondrons dans les plus brefs délais.</p>
         </div>
       </div>
@@ -26,8 +26,8 @@ const ContactSection = () => {
         </div>
 
         {/* Formulaire de contact */}
-        <form className="bg-white rounded-2xl p-8 w-full md:w-1/2 flex flex-col gap-6">
-          <div className="flex gap-4 w-full">
+        <form className="bg-white rounded-2xl p-2 lg:p-8 w-full md:w-1/2 flex flex-col gap-6">
+          <div className="flex flex-col md:flex-row gap-4 w-full">
             <div className="w-full flex flex-col gap-2">
               <label htmlFor="nom" className="font-semibold">Nom</label>
               <input type="text" placeholder="Nom" className="flex-1 border-b-2 border-gray-300 pr-4 py-2 focus:outline-none text-sm" />
@@ -37,7 +37,7 @@ const ContactSection = () => {
               <input type="text" placeholder="Prénom" className="flex-1 border-b-2 border-gray-300 pr-4 py-2 focus:outline-none text-sm" />
             </div>
           </div>
-          <div className="flex gap-4 w-full">
+          <div className="flex flex-col md:flex-row gap-4 w-full">
             <div className="w-full flex flex-col gap-2">
               <label htmlFor="email" className="text-gray-500 font-semibold">Adresse mail</label>
               <input type="email" placeholder="Adresse mail" className="flex-1 border-b-2 border-gray-300 pr-4 py-2 focus:outline-none text-sm" />
@@ -48,7 +48,7 @@ const ContactSection = () => {
             </div>
           </div>
 
-          <div className="flex gap-4 w-full">
+          <div className="flex flex-col md:flex-row gap-4 w-full">
             <div className="w-full flex flex-col gap-2">
               <label htmlFor="message" className="text-gray-500 font-semibold">Message</label>
               <textarea placeholder="Message" className="flex-1 border-b-2 border-gray-300 pr-4 py-2 focus:outline-none text-sm" />

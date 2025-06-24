@@ -38,13 +38,13 @@ const GedPage = () => {
                         </p>
                     </div>
                 </div>
-                <div className="md:w-1/2 translate-x-8">
+                <div className="md:w-1/2 lg:translate-x-8">
                     <img src="/images/GED-DASHBOARD.png" alt="Dowonou RH Mockup" className="w-full" />
                 </div>
             </div>
 
-            <div className="flex flex-col justify-center pb-28 pt-28">
-                <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-20 h-full bg-transparent px-">
+            <div className="flex flex-col justify-center pb-28 pt-20 lg:pt-28">
+                <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-20 h-full bg-transparent px-4 lg:px-0">
                     <div className="md:w-1/2 w-full h-full flex justify-center">
                         <div className="relative w-full h-full">
                             <img src="/images/GED-FEATURES.png" alt="Fonctionnalités GED" className="rounded-lg w-full h-full object-cover" />

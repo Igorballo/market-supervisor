@@ -2,19 +2,17 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <footer className="bg-white py-10">
+    <footer className="bg-white py-10 px-4 lg:px-0">
       <div className="max-w-6xl mx-auto">
-      <div className="px- flex flex-col md:flex-row justify-between items-start gap-10">
+      <div className="px- flex flex-col lg:flex-row justify-between items-start gap-10">
         {/* Logo et description */}
         <div className="flex-1 mb-8 md:mb-0 w-full">
           <div className="flex items-start justify-start gap-2 mb-3 w-full">
             <img src="/svg/DOWONOU_FOOTER.svg" alt="logo" className="h-10" />
           </div>
-          <p className="text-gray-500 mb-4">Une solution complète et intuitive qui centralise toutes les fonctions RH en un seul endroit. Partenaire pour la gestion des entreprises.</p>
+          <p className="text-gray-500 text-justify lg:text-left mb-4">Une solution complète et intuitive qui centralise toutes les fonctions RH en un seul endroit. Partenaire pour la gestion des entreprises.</p>
           <div className="flex gap-3 text-2xl">
             <img src="/svg/RESEAUX_SOCIAUX.svg" alt="facebook" className="h-6" />
-            {/* <img src="/svg/TWITTER.svg" alt="twitter" className="w-5 h-5" />
-            <img src="/svg/LINKEDIN.svg" alt="linkedin" className="w-5 h-5" /> */}
           </div>
         </div>
         {/* Menu rapide */}
@@ -37,8 +35,8 @@ const Footer = () => {
           </ul>
         </div>
       </div>
-      <div className="flex flex-row w-full items-center justify-between font-semibold border-t-2 border-gray-200 border-dashed text-gray-800 text-sm pt-5 mt-8">
-        <p>Copyright 2025 All Rights Reserved Dowonou </p> <p>By AF Corporations</p>
+      <div className="flex flex-col gap-1 md:gap-0 md:flex-row w-full  items-center justify-between font-semibold border-t-2 border-gray-200 border-dashed text-gray-800 text-sm pt-5 mt-8">
+        <p>Copyright 2025 All Rights Reserved Dowonou </p> <a href="https://afcorporations.com" target="_blank" rel="noopener noreferrer" className="text-blue-500">By AF Corporations</a>
       </div>
       </div>
     </footer>

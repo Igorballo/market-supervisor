@@ -28,7 +28,7 @@ const modules = [
    },
 ];
 
-const Navbar = () => {
+const Navbar_2 = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [dropdown, setDropdown] = useState(false);
@@ -55,7 +55,7 @@ const Navbar = () => {
   }, [dropdown]);
 
   return (
-    <nav className={`${scrolled ? "bg-white shadow text-gray-800" : "bg-transparent shadow-none text-white"} fixed w-full top-0 left-0 transition-all duration-300`} style={{ zIndex: 1000 }}>
+    <nav className="bg-white shadow text-gray-800 fixed w-full top-0 left-0 transition-all duration-300" style={{ zIndex: 1000 }}>
       <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
         <div className="flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="140" height="35" viewBox="0 0 205 44.308">
@@ -66,7 +66,7 @@ const Navbar = () => {
                 fontSize="31"
                 fontFamily="Poppins-SemiBold, Poppins"
                 fontWeight="600"
-                className={scrolled ? "text-gray-800" : "text-white"}
+                className="text-gray-800"
                 fill="currentColor"
               >
                 <tspan x="0" y="0">Dowonou</tspan>
@@ -85,7 +85,7 @@ const Navbar = () => {
           <NavLink 
             to="/" 
             className={({ isActive }) => 
-              `font-medium text-sm ${scrolled ? "text-gray-700" : "text-gray-200"} hover:text-blue-500 ${isActive ? 'border-b-[3px] border-blue-400 pb-0.5' : ''}`
+              `font-medium text-sm text-gray-700 hover:text-blue-500 ${isActive ? 'border-b-[3px] border-blue-400 pb-0.5' : ''}`
             }
           >
             Accueil
@@ -94,7 +94,7 @@ const Navbar = () => {
           <div className="relative" id="solutions-dropdown">
             <button
               onClick={() => setDropdown((d) => !d)}
-              className={`flex items-center gap-1 ${scrolled ? "text-gray-700" : "text-gray-200"} hover:text-blue-500 font-medium text-sm focus:outline-none ${isSolutionsActive ? 'border-b-[3px] border-blue-400 pb-0.5' : ''}`}
+              className={`flex items-center gap-1 text-gray-700 hover:text-blue-500 font-medium text-sm focus:outline-none ${isSolutionsActive ? 'border-b-[3px] border-blue-400 pb-0.5' : ''}`}
             >
               Solutions
               <svg className={`w-4 h-4 transition-transform ${dropdown ? "rotate-180" : "rotate-0"}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
@@ -130,8 +130,12 @@ const Navbar = () => {
             )}
           </div>
 
-          <Link to="/about" className={`${scrolled ? "text-gray-700" : "text-gray-200"} hover:text-blue-500 font-medium text-sm`}>À propos</Link>
-          <Link to="/contact" className={`${scrolled ? "text-gray-700" : "text-gray-200"} hover:text-blue-500 font-medium text-sm`}>Contact</Link>
+          <NavLink to="/about" className={({ isActive }) => 
+              `text-gray-700 hover:text-blue-500 font-medium text-sm ${isActive ? 'border-b-[3px] border-blue-400 pb-0.5' : ''}`
+            }>À propos</NavLink>
+          <NavLink to="/contact" className={({ isActive }) => 
+              `text-gray-700 hover:text-blue-500 font-medium text-sm ${isActive ? 'border-b-[3px] border-blue-400 pb-0.5' : ''}`
+            }>Contact</NavLink>
         </div>
         {/* Bouton Se connecter */}
         <div className="hidden md:block">
@@ -140,11 +144,11 @@ const Navbar = () => {
         {/* Hamburger */}
         <button className="md:hidden flex items-center justify-center w-8 h-8 flex-shrink-0 ml-2" onClick={() => setOpen(!open)}>
           {open ? (
-            <svg className="w-6 h-6 -mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           ) : (
-            <svg className="w-6 h-6 -mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           )}
@@ -187,4 +191,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar; 
+export default Navbar_2; 

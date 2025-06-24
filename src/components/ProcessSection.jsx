@@ -29,7 +29,7 @@ const ProcessSection = () => {
         Chez Dowonou, notre approche repose sur quatre étapes clés : recueil de besoins, customisation, déploiement et formation avec maintenance, pour vous offrir une solution parfaitement adaptée et opérationnelle.
         </p>
         <div className="flex flex-col md:flex-row justify-between items-center gap-8 md:gap-0">
-          <div className="flex flex-row items-center w-full">
+          <div className="flex flex-row flex-wrap lg:flex-nowrap items-center w-full">
             {steps.map((step, idx) => (
               <React.Fragment key={step.title}>
                 <div className="flex flex-col items-center text-center flex-1">

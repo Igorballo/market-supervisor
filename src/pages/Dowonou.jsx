@@ -38,12 +38,12 @@ const RhPage = () => {
                         </p>
                     </div>
                 </div>
-                <div className="md:w-1/2 translate-x-8">
+                <div className="md:w-1/2 lg:translate-x-8">
                     <img src="/images/USER-PROFILE.png" alt="Dowonou RH Mockup" className="w-full" />
                 </div>
             </div>
 
-            <div className="flex flex-col justify-center pb-20 pt-28">
+            <div className="flex flex-col justify-center pb-20 pt-20 lg:pt-28">
                 <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 h-full bg-transparent px-4">
                     <div className="md:w-1/2 w-full h-full flex justify-center">
                         <div className="relative w-full h-full">
