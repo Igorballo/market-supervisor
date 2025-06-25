@@ -1,70 +1,157 @@
-# Getting Started with Create React App
+# Dowonou Space - Plateforme de Recherches Automatisées
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Une application web React moderne destinée aux entreprises pour effectuer des recherches automatisées sur Internet.
 
-## Available Scripts
+## 🚀 Fonctionnalités
 
-In the project directory, you can run:
+### 👨‍💼 Page d'Administration
+- **Enregistrement des entreprises** : Interface complète pour l'administrateur
+- **Gestion des accès** : Création de comptes entreprises avec validation
+- **Informations requises** : Nom, email, mot de passe, pays, secteur d'activité
+- **Liste des entreprises** : Vue d'ensemble de toutes les entreprises enregistrées
 
-### `npm start`
+### 🔐 Authentification
+- **Page de connexion** : Interface professionnelle et sécurisée
+- **Validation côté client** : Gestion des erreurs et feedback utilisateur
+- **Mot de passe oublié** : Interface préparée (non fonctionnelle)
+- **Protection des routes** : Redirection automatique si non authentifié
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 📊 Dashboard Entreprise
+- **Statistiques en temps réel** : Nombre de recherches, crons actifs, etc.
+- **Gestion des Crons** : Création et gestion des tâches automatisées
+- **Interface intuitive** : Design moderne avec animations fluides
+- **Responsive design** : Optimisé pour tous les appareils
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 🤖 Système de Crons
+- **Création de tâches** : Interface modale pour créer de nouveaux crons
+- **Tags de recherche** : Système flexible de tags pour définir les critères
+- **Suivi des résultats** : Historique complet des recherches effectuées
+- **Statut des tâches** : Activation/désactivation des crons
 
-### `npm test`
+### 📈 Analytics
+- **Statistiques avancées** : Évolution mensuelle, tags populaires
+- **Activité récente** : Suivi des dernières actions
+- **Visualisations** : Graphiques et métriques claires
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🛠️ Technologies Utilisées
 
-### `npm run build`
+- **React 19** : Framework principal
+- **React Router DOM** : Navigation et routage
+- **Tailwind CSS** : Styling moderne et responsive
+- **Zustand** : Gestion d'état légère et performante
+- **React Hook Form** : Gestion des formulaires
+- **Heroicons** : Icônes modernes et cohérentes
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 📁 Structure du Projet
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+src/
+├── components/          # Composants réutilisables
+│   ├── CreateCronModal.jsx
+│   ├── CronDetailsModal.jsx
+│   ├── DashboardNav.jsx
+│   └── Analytics.jsx
+├── pages/              # Pages principales
+│   ├── Admin.jsx       # Page d'administration
+│   ├── Login.jsx       # Page de connexion
+│   ├── Dashboard.jsx   # Dashboard entreprise
+│   └── ...            # Autres pages existantes
+├── store/              # Gestion d'état
+│   └── useStore.js     # Store Zustand
+└── Router.jsx          # Configuration des routes
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🚀 Installation et Démarrage
 
-### `npm run eject`
+1. **Cloner le projet**
+   ```bash
+   git clone [url-du-repo]
+   cd MS
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+2. **Installer les dépendances**
+   ```bash
+   npm install
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+3. **Démarrer l'application**
+   ```bash
+   npm start
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+4. **Accéder à l'application**
+   - Page d'accueil : `http://localhost:3000`
+   - Administration : `http://localhost:3000/admin`
+   - Connexion : `http://localhost:3000/login`
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 🔧 Configuration
 
-## Learn More
+### Données de Test
+L'application inclut des données de test pour démonstration :
+- **Entreprises** : Tech Solutions SARL, Construction Plus
+- **Crons** : Exemples de tâches automatisées
+- **Résultats** : Données simulées de recherches
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Authentification
+Pour tester l'application, utilisez ces identifiants :
+- **Email** : `contact@techsolutions.tg`
+- **Mot de passe** : `hashed_password`
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 📱 Fonctionnalités Principales
 
-### Code Splitting
+### Pour l'Administrateur
+1. Accéder à `/admin`
+2. Enregistrer de nouvelles entreprises
+3. Consulter la liste des entreprises
+4. Gérer les accès à la plateforme
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Pour les Entreprises
+1. Se connecter via `/login`
+2. Accéder au dashboard personnalisé
+3. Créer des tâches automatisées (Crons)
+4. Consulter les résultats de recherche
+5. Analyser les statistiques
 
-### Analyzing the Bundle Size
+## 🎨 Design et UX
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- **Interface moderne** : Design épuré et professionnel
+- **Animations fluides** : Transitions et micro-interactions
+- **Responsive** : Optimisé mobile, tablette et desktop
+- **Accessibilité** : Respect des standards WCAG
+- **Couleurs cohérentes** : Palette professionnelle
 
-### Making a Progressive Web App
+## 🔒 Sécurité
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- **Validation côté client** : Formulaires sécurisés
+- **Protection des routes** : Authentification requise
+- **Gestion des sessions** : Persistance avec Zustand
+- **Validation des données** : Contrôles de saisie
 
-### Advanced Configuration
+## 📈 Évolutions Futures
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- [ ] Intégration API backend
+- [ ] Système de notifications
+- [ ] Export des données
+- [ ] Rapports avancés
+- [ ] Gestion des permissions
+- [ ] API pour l'IA de recherche
 
-### Deployment
+## 🤝 Contribution
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
 
-### `npm run build` fails to minify
+## 📄 Licence
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+
+## 📞 Support
+
+Pour toute question ou support, contactez l'équipe de développement.
+
+---
+
+**Développé avec ❤️ par l'équipe Dowonou**

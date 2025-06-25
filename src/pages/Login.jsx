@@ -1,96 +1,250 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import useStore from '../store/useStore';
+import {
+  EyeIcon,
+  EyeSlashIcon,
+  EnvelopeIcon,
+  LockClosedIcon,
+  ArrowRightIcon,
+  ExclamationTriangleIcon,
+  CheckCircleIcon
+} from '@heroicons/react/24/outline';
 
-const LoginPage = () => {
+const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { login } = useStore();
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Ici tu peux ajouter la logique d'authentification
-    navigate("/modules");
+  // Données statiques pour tester
+  const testUsers = [
+    {
+      email: 'admin@dowonou.com',
+      password: 'admin123',
+      role: 'admin',
+      name: 'Administrateur',
+      company: 'Dowonou Space',
+      sector: 'Technologie',
+      country: 'Togo'
+    },
+    {
+      email: 'techcorp@test.com',
+      password: 'tech123',
+      role: 'company',
+      name: 'TechCorp Solutions',
+      company: 'TechCorp Solutions',
+      sector: 'Technologie',
+      country: 'France'
+    },
+    {
+      email: 'marketing@test.com',
+      password: 'marketing123',
+      role: 'company',
+      name: 'Digital Marketing Pro',
+      company: 'Digital Marketing Pro',
+      sector: 'Marketing',
+      country: 'France'
+    }
+  ];
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm();
+
+  const onSubmit = async (data) => {
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
+    // Simuler un délai de connexion
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Vérifier les identifiants de test
+    const user = testUsers.find(u => u.email === data.email && u.password === data.password);
+
+    if (user) {
+      // Simuler une connexion réussie
+      const userData = {
+        id: Date.now(),
+        email: user.email,
+        name: user.name,
+        company: user.company,
+        sector: user.sector,
+        country: user.country,
+        role: user.role
+      };
+
+      console.log('Connexion réussie pour:', userData);
+      login(userData);
+      setSuccess('Connexion réussie ! Redirection...');
+      
+      setTimeout(() => {
+        console.log('Redirection vers:', user.role === 'admin' ? '/admin' : '/dashboard');
+        if (user.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
+      }, 800);
+    } else {
+      setError('Email ou mot de passe incorrect');
+    }
+
+    setIsLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-      <div className="hidden lg:flex justify-end mb-4 w-full pr-20">
-        <span onClick={() => navigate("/")} className="hover:cursor-pointer text-gray-500 text-sm hover:text-blue-600 transition">Site Dowonou <span className="inline-block">↑</span></span>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden flex items-center justify-center">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-40 left-40 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="flex flex-col md:flex-row w-full max-w-5xl overflow-hidden md:px-4 lg:px-0 md:gap-6 lg:gap-12">
-        {/* Image à gauche */}
-        <div className="md:w-1/2 w-full h-80 md:h-auto flex items-center justify-center">
-          <img
-            src="/images/LOGIN.png"
-            alt="login visual"
-            className="object-cover w-full  h-full md:rounded-3xl"
-          />
-        </div>
-        {/* Formulaire à droite */}
-        <div className="md:w-1/2 w-full flex flex-col justify-center justify-between p-8 md:pb-6 md:p-12">
-        <div className="lg:hidden flex justify-end mb-8 w-full">
-        <span onClick={() => navigate("/")} className="hover:cursor-pointer text-gray-500 text-sm hover:text-blue-600 transition">Site Dowonou <span className="inline-block">↑</span></span>
-      </div>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-              DOWONOU <span className="text-blue-600">SPACE</span>
-            </h1>
-            <div className="text-xs text-gray-500 mb-6 uppercase tracking-wider">UNE NOUVELLE VISION DE LA GESTION D'ENTREPRISE</div>
-            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">Content de vous revoir <span>👋</span></h2>
-            <p className="text-gray-500 mb-6">Connectez-vous pour accéder à votre compte</p>
-            <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="relative w-full max-w-md mx-4">
+        {/* Login Card */}
+        <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl p-8">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-3xl"></div>
+          <div className="relative">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-lg mb-6">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent mb-2">
+                Dowonou Space
+              </h1>
+              <p className="text-blue-200">
+                Connectez-vous à votre espace entreprise
+              </p>
+            </div>
+
+            {/* Success/Error Messages */}
+            {success && (
+              <div className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-xl backdrop-blur-sm">
+                <div className="flex items-center">
+                  <CheckCircleIcon className="h-5 w-5 text-green-400 mr-2" />
+                  <span className="text-green-300">{success}</span>
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl backdrop-blur-sm">
+                <div className="flex items-center">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mr-2" />
+                  <span className="text-red-300">{error}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Login Form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-1">Adresse mail <span className="text-red-500">*</span></label>
+                <label className="block text-blue-200 text-sm font-medium mb-2">
+                  Email
+                </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <img src="/svg/EMAIL_INPUT.svg" className="w-5 h-4" alt="mail" />
-                  </span>
+                  <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-300" />
                   <input
                     type="email"
-                    required
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="example@email.com"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    {...register('email', { 
+                      required: 'L\'email est requis',
+                      pattern: {
+                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                        message: 'Email invalide'
+                      }
+                    })}
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-blue-200/50 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all duration-300"
+                    placeholder="votre@email.com"
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>
+                )}
               </div>
+
               <div>
-                <label className="block text-sm font-medium mb-1">Mot de passe <span className="text-red-500">*</span></label>
+                <label className="block text-blue-200 text-sm font-medium mb-2">
+                  Mot de passe
+                </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <img src="/svg/PASSWORD_INPUT.svg" className="w-5 h-4" alt="mail" />
-                  </span>
+                  <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-300" />
                   <input
-                    type="password"
-                    required
-                    minLength={8}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="au moins 8 caractères"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
+                    type={showPassword ? 'text' : 'password'}
+                    {...register('password', { required: 'Le mot de passe est requis' })}
+                    className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-blue-200/50 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all duration-300"
+                    placeholder="••••••••"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-300 hover:text-white transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
                 </div>
-                <div className="flex justify-end mt-1">
-                  <Link to="/reset-password" className="text-blue-600 hover:underline">
-                    Mot de passe oublié ?
-                  </Link>
-                </div>
+                {errors.password && (
+                  <p className="text-red-400 text-sm mt-1">{errors.password.message}</p>
+                )}
               </div>
+
               <button
-                onClick={handleSubmit}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition mt-2"
+                type="submit"
+                disabled={isLoading}
+                className="w-full group relative px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Connexion
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Connexion...
+                  </div>
+                ) : (
+                  <>
+                    Se connecter
+                    <ArrowRightIcon className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                  </>
+                )}
               </button>
             </form>
+
+            {/* Test Accounts Info */}
+            <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+              <h3 className="text-blue-200 font-medium mb-2">Comptes de test :</h3>
+              <div className="space-y-2 text-sm text-blue-300">
+                <div><strong>Admin:</strong> admin@dowonou.com / admin123</div>
+                <div><strong>Entreprise 1:</strong> techcorp@test.com / tech123</div>
+                <div><strong>Entreprise 2:</strong> marketing@test.com / marketing123</div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-8 text-center">
+              <a
+                href="/reset-password"
+                className="text-blue-300 hover:text-blue-200 transition-colors text-sm"
+              >
+                Mot de passe oublié ?
+              </a>
+            </div>
           </div>
-          <div className="text-xs text-gray-400 text-center mt-8">© 2025 ALL RIGHTS RESERVED DOWONOU</div>
         </div>
       </div>
     </div>
   );
 };
 
-export default LoginPage; 
+export default Login; 
