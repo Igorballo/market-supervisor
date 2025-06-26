@@ -8,19 +8,25 @@ export const companyService = {
    */
   async getCompanies() {
     try {
+      console.log('🔄 Récupération des entreprises...');
       const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.COMPANIES.LIST), {
         method: 'GET',
         headers: getAuthHeaders(),
       });
 
+      console.log('🔄 Réponse API status:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('❌ Erreur API:', errorData);
         throw new Error(errorData.message || 'Erreur lors de la récupération des entreprises');
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log('✅ Entreprises récupérées:', data);
+      return data;
     } catch (error) {
-      console.error('Erreur lors de la récupération des entreprises:', error);
+      console.error('❌ Erreur lors de la récupération des entreprises:', error);
       throw error;
     }
   },
@@ -32,20 +38,33 @@ export const companyService = {
    */
   async createCompany(companyData) {
     try {
+      // Nettoyer les données pour éviter les erreurs de createdAt
+      const cleanData = { ...companyData };
+      delete cleanData.createdAt;
+      delete cleanData.updatedAt;
+      delete cleanData.id;
+      
+      console.log('🔄 Création de l\'entreprise avec les données:', cleanData);
+      
       const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.COMPANIES.CREATE), {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(companyData),
+        body: JSON.stringify(cleanData),
       });
+
+      console.log('🔄 Réponse API status:', response.status);
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('❌ Erreur API:', errorData);
         throw new Error(errorData.message || 'Erreur lors de la création de l\'entreprise');
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log('✅ Entreprise créée avec succès:', data);
+      return data;
     } catch (error) {
-      console.error('Erreur lors de la création de l\'entreprise:', error);
+      console.error('❌ Erreur lors de la création de l\'entreprise:', error);
       throw error;
     }
   },
@@ -58,20 +77,33 @@ export const companyService = {
    */
   async updateCompany(id, companyData) {
     try {
+      // Nettoyer les données pour éviter les erreurs de createdAt
+      const cleanData = { ...companyData };
+      delete cleanData.createdAt;
+      delete cleanData.updatedAt;
+      delete cleanData.id;
+      
+      console.log('🔄 Mise à jour de l\'entreprise avec les données:', cleanData);
+      
       const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.COMPANIES.UPDATE, { id }), {
-        method: 'PUT',
+        method: 'PATCH',
         headers: getAuthHeaders(),
-        body: JSON.stringify(companyData),
+        body: JSON.stringify(cleanData),
       });
+
+      console.log('🔄 Réponse API status:', response.status);
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('❌ Erreur API:', errorData);
         throw new Error(errorData.message || 'Erreur lors de la mise à jour de l\'entreprise');
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log('✅ Entreprise mise à jour avec succès:', data);
+      return data;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour de l\'entreprise:', error);
+      console.error('❌ Erreur lors de la mise à jour de l\'entreprise:', error);
       throw error;
     }
   },

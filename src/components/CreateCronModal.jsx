@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { XMarkIcon, PlusIcon, SparklesIcon, RocketLaunchIcon, TagIcon, WrenchScrewdriverIcon, BeakerIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PlusIcon, SparklesIcon, RocketLaunchIcon, TagIcon, WrenchScrewdriverIcon, BeakerIcon, CheckIcon } from '@heroicons/react/24/outline';
 import useStore from '../store/useStore';
 import { cronService } from '../services/cronService';
-import { testApiConnection, testCronCreationWithDifferentPayloads } from '../services/testApi';
+import { testApiConnection, testCronCreationWithDifferentPayloads, testCronCreationSingleCall } from '../services/testApi';
 
-const CreateCronModal = ({ isOpen, onClose, companyId }) => {
+const CreateCronModal = ({ isOpen, onClose, companyId, onSuccess }) => {
   const { currentUser, createCron } = useStore();
   const [tags, setTags] = useState([]);
   const [newTag, setNewTag] = useState('');
@@ -60,6 +60,18 @@ const CreateCronModal = ({ isOpen, onClose, companyId }) => {
     }
   };
 
+  const testSingleCall = async () => {
+    setIsTestingApi(true);
+    try {
+      await testCronCreationSingleCall();
+      alert('✅ Test d\'appel unique réussi ! Vérifiez la console.');
+    } catch (error) {
+      alert('❌ Erreur lors du test: ' + error.message);
+    } finally {
+      setIsTestingApi(false);
+    }
+  };
+
   const onSubmit = async (data) => {
     if (tags.length === 0) {
       setError('Veuillez ajouter au moins un tag');
@@ -74,54 +86,36 @@ const CreateCronModal = ({ isOpen, onClose, companyId }) => {
       const cronData = {
         name: data.name.trim(),
         tags: tags,
+        keywords: tags.join(', '), // Générer le keyword à partir des tags séparés par des virgules
         companyId: companyId || currentUser?.id,
         description: data.description ? data.description.trim() : `Tâche automatisée: ${data.name.trim()}`
       };
 
-      console.log('Création du cron avec les données:', cronData);
+      console.log('🔄 Création du cron avec les données:', cronData);
 
-      // Appel à l'API pour créer le cron
-      const newCron = await cronService.createCron(cronData);
+      // Utiliser seulement la fonction du store qui gère l'API
+      const newCron = await createCron(cronData);
       
-      console.log('Cron créé avec succès:', newCron);
-
-      // Mettre à jour le store local avec les données de l'API
-      await createCron({
-        ...newCron,
-        companyId: companyId || currentUser?.id
-      });
+      console.log('✅ Cron créé avec succès:', newCron);
 
       reset();
       setTags([]);
       setError('');
       onClose();
+      
+      // Appeler le callback de succès si fourni
+      if (onSuccess) {
+        onSuccess(newCron);
+      }
 
     } catch (apiError) {
-      console.error('Erreur lors de la création du Cron:', apiError);
+      console.error('❌ Erreur lors de la création du Cron:', apiError);
       
       // Afficher l'erreur détaillée pour le debugging
       if (apiError.message) {
         setError(`Erreur: ${apiError.message}`);
       } else {
         setError('Erreur lors de la création de la tâche');
-      }
-      
-      // Fallback pour le développement
-      if (apiError.message && (apiError.message.includes('fetch') || apiError.message.includes('network'))) {
-        console.log('API non disponible, ajout local pour le développement');
-        createCron({
-          companyId: companyId || currentUser?.id,
-          name: data.name,
-          tags: tags,
-          id: Date.now(),
-          createdAt: new Date().toISOString().split('T')[0],
-          searchCount: 0,
-          lastSearch: null,
-          isActive: true
-        });
-        reset();
-        setTags([]);
-        onClose();
       }
     } finally {
       setIsSubmitting(false);
@@ -176,6 +170,18 @@ const CreateCronModal = ({ isOpen, onClose, companyId }) => {
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-300"></div>
                 ) : (
                   <BeakerIcon className="h-5 w-5" />
+                )}
+              </button>
+              <button
+                onClick={testSingleCall}
+                disabled={isTestingApi}
+                className="p-2 text-blue-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 disabled:opacity-50"
+                title="Tester l'appel unique"
+              >
+                {isTestingApi ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-300"></div>
+                ) : (
+                  <CheckIcon className="h-5 w-5" />
                 )}
               </button>
               <button

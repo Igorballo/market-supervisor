@@ -1,5 +1,7 @@
 // Fichier de test pour vérifier la connectivité API
 import { API_CONFIG, buildApiUrl, getAuthHeaders } from './apiConfig';
+import { cronService } from './cronService';
+import { companyService } from './companyService';
 
 export const testApiConnection = async () => {
   try {
@@ -89,6 +91,81 @@ export const testCronCreationWithDifferentPayloads = async () => {
     const result = await testCronCreation(testPayloads[i]);
     console.log(`Résultat:`, result);
   }
+};
+
+// Fonction de test pour vérifier les appels d'API uniques
+export const testSingleApiCall = async (serviceFunction, data, testName) => {
+  console.log(`🧪 Test: ${testName}`);
+  console.log('📤 Données envoyées:', data);
+  
+  const startTime = Date.now();
+  try {
+    const result = await serviceFunction(data);
+    const endTime = Date.now();
+    
+    console.log(`✅ ${testName} réussi en ${endTime - startTime}ms`);
+    console.log('📥 Résultat reçu:', result);
+    return result;
+  } catch (error) {
+    const endTime = Date.now();
+    console.error(`❌ ${testName} échoué en ${endTime - startTime}ms:`, error);
+    throw error;
+  }
+};
+
+// Fonction pour tester la création de cron sans double appel
+export const testCronCreationSingleCall = async () => {
+  const tags = ["test", "unique"];
+  const testData = {
+    name: "Test Cron Unique",
+    tags: tags,
+    keywords: tags.join(' '), // Générer le keyword à partir des tags
+    companyId: 1,
+    description: "Test pour vérifier l'appel unique"
+  };
+  
+  return await testSingleApiCall(
+    cronService.createCron,
+    testData,
+    "Création de Cron - Appel Unique"
+  );
+};
+
+// Fonction pour tester la création d'entreprise sans double appel
+export const testCompanyCreationSingleCall = async () => {
+  const testData = {
+    name: "Test Entreprise Unique",
+    email: "test@unique.com",
+    telephone: "+1234567890",
+    country: "France",
+    sector: "Technologie",
+    website: "https://test-unique.com"
+  };
+  
+  return await testSingleApiCall(
+    companyService.createCompany,
+    testData,
+    "Création d'Entreprise - Appel Unique"
+  );
+};
+
+// Fonction pour tester la modification d'entreprise sans double appel
+export const testCompanyUpdateSingleCall = async () => {
+  const testData = {
+    name: "Test Entreprise Modifiée",
+    email: "modifie@test.com",
+    telephone: "+9876543210",
+    country: "France",
+    sector: "Technologie",
+    website: "https://test-modifie.com",
+    isActive: true
+  };
+  
+  return await testSingleApiCall(
+    (id, data) => companyService.updateCompany(id, data),
+    [1, testData],
+    "Modification d'Entreprise - Appel Unique"
+  );
 };
 
 export default {

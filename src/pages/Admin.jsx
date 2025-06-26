@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import useStore from '../store/useStore';
+import { companyService } from '../services/companyService';
+import { testCompanyCreationSingleCall, testCompanyUpdateSingleCall } from '../services/testApi';
 import {
   PlusIcon,
   TrashIcon,
@@ -11,85 +13,142 @@ import {
   PhoneIcon,
   EnvelopeIcon,
   UserIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  WrenchScrewdriverIcon
 } from '@heroicons/react/24/outline';
 
 const Admin = () => {
-  const { addCompany } = useStore();
+  const { 
+    companies, 
+    loading, 
+    errors, 
+    createCompany, 
+    fetchCompanies,
+    updateCompany
+  } = useStore();
+  
   const [showForm, setShowForm] = useState(false);
+  const [editingCompany, setEditingCompany] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTestingApi, setIsTestingApi] = useState(false);
 
-  // Données statiques pour l'aperçu
-  const [staticCompanies] = useState([
-    {
-      id: 1,
-      name: "TechCorp Solutions",
-      email: "contact@techcorp.com",
-      phone: "+33 1 23 45 67 89",
-      country: "France",
-      sector: "Technologie",
-      website: "https://techcorp.com",
-      createdAt: "2024-01-15",
-      status: "active"
-    },
-    {
-      id: 2,
-      name: "Digital Marketing Pro",
-      email: "info@digitalmarketingpro.com",
-      phone: "+33 1 98 76 54 32",
-      country: "France",
-      sector: "Marketing",
-      website: "https://digitalmarketingpro.com",
-      createdAt: "2024-01-12",
-      status: "active"
-    },
-    {
-      id: 3,
-      name: "Fintech Innovations",
-      email: "hello@fintechinnovations.com",
-      phone: "+33 1 45 67 89 12",
-      country: "France",
-      sector: "Finance",
-      website: "https://fintechinnovations.com",
-      createdAt: "2024-01-10",
-      status: "pending"
-    },
-    {
-      id: 4,
-      name: "Green Energy Solutions",
-      email: "contact@greenenergy.com",
-      phone: "+33 1 34 56 78 90",
-      country: "France",
-      sector: "Énergie",
-      website: "https://greenenergy.com",
-      createdAt: "2024-01-08",
-      status: "active"
+  // Charger les entreprises au montage du composant
+  useEffect(() => {
+    loadCompanies();
+  }, []);
+
+  const loadCompanies = async () => {
+    try {
+      console.log('🔄 Chargement des entreprises...');
+      const companiesData = await fetchCompanies();
+      console.log('✅ Entreprises chargées:', companiesData);
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des entreprises:', error);
     }
-  ]);
+  };
+
+  const testApiCalls = async () => {
+    setIsTestingApi(true);
+    try {
+      console.log('🧪 Test des appels d\'API uniques pour les entreprises...');
+      await testCompanyCreationSingleCall();
+      await testCompanyUpdateSingleCall();
+      alert('✅ Tests terminés ! Vérifiez la console pour les résultats.');
+    } catch (error) {
+      alert('❌ Erreur lors des tests: ' + error.message);
+    } finally {
+      setIsTestingApi(false);
+    }
+  };
 
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors }
+    setValue,
+    formState: { errors: formErrors }
   } = useForm();
 
-  const onSubmit = (data) => {
-    const newCompany = {
-      id: Date.now(),
-      ...data,
-      createdAt: new Date().toISOString(),
-      status: 'active'
-    };
+  const onSubmit = async (data) => {
+    setIsSubmitting(true);
     
-    addCompany(newCompany);
-    setSuccessMessage('Entreprise ajoutée avec succès !');
+    try {
+      // Préparer les données en renommant phone en telephone
+      const companyData = {
+        ...data,
+        telephone: data.phone, // Renommer phone en telephone
+        // isActive: true, // Par défaut, une nouvelle entreprise est active
+      };
+      
+      // Supprimer le champ phone pour éviter les conflits
+      delete companyData.phone;
+      
+      console.log('🔄 Création/Modification de l\'entreprise avec les données:', companyData);
+      
+      if (editingCompany) {
+        // Modification d'une entreprise existante
+        const updateData = {
+          ...companyData,
+          isActive: data.isActive !== undefined ? data.isActive : editingCompany.isActive // Utiliser la valeur du formulaire ou préserver le statut actuel
+        };
+        
+        const updatedCompany = await updateCompany(editingCompany.id, updateData);
+        console.log('✅ Entreprise modifiée avec succès:', updatedCompany);
+        
+        setSuccessMessage('Entreprise modifiée avec succès !');
+      } else {
+        // Création d'une nouvelle entreprise
+        const newCompany = await createCompany(companyData);
+        console.log('✅ Entreprise créée avec succès:', newCompany);
+        
+        setSuccessMessage('Entreprise ajoutée avec succès !');
+      }
+      
+      setShowForm(false);
+      setEditingCompany(null);
+      reset();
+      
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
+      
+    } catch (error) {
+      console.error('❌ Erreur lors de la création/modification de l\'entreprise:', error);
+      setSuccessMessage(`Erreur: ${error.message}`);
+      
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEdit = (company) => {
+    setEditingCompany(company);
+    // Pré-remplir le formulaire avec les données de l'entreprise
+    setValue('name', company.name);
+    setValue('email', company.email);
+    setValue('phone', company.telephone || company.phone); // Gérer les deux cas
+    setValue('country', company.country);
+    setValue('sector', company.sector);
+    setValue('website', company.website);
+    setShowForm(true);
+  };
+
+  const handleCancel = () => {
     setShowForm(false);
+    setEditingCompany(null);
     reset();
-    
-    setTimeout(() => {
-      setSuccessMessage('');
-    }, 3000);
+  };
+
+  // Fonction utilitaire pour afficher le téléphone
+  const getPhoneDisplay = (company) => {
+    console.log('📞 Recherche téléphone pour:', company.name, company);
+    const phone = company.telephone || company.phone || company.tel || company.telephoneNumber;
+    console.log('📞 Téléphone trouvé:', phone);
+    return phone || 'Non renseigné';
   };
 
   return (
@@ -113,13 +172,27 @@ const Admin = () => {
                 Gérez les entreprises et leurs accès à la plateforme
               </p>
             </div>
-            <button
-              onClick={() => setShowForm(true)}
-              className="group relative px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center"
-            >
-              <PlusIcon className="h-5 w-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
-              Ajouter une entreprise
-            </button>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={testApiCalls}
+                disabled={isTestingApi}
+                className="p-3 text-blue-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 disabled:opacity-50"
+                title="Tester les appels d'API uniques"
+              >
+                {isTestingApi ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-300"></div>
+                ) : (
+                  <WrenchScrewdriverIcon className="h-5 w-5" />
+                )}
+              </button>
+              <button
+                onClick={() => setShowForm(true)}
+                className="group relative px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center"
+              >
+                <PlusIcon className="h-5 w-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+                Ajouter une entreprise
+              </button>
+            </div>
           </div>
         </div>
 
@@ -133,6 +206,15 @@ const Admin = () => {
           </div>
         )}
 
+        {/* Error Message */}
+        {errors.companies && (
+          <div className="mb-8 p-4 bg-red-500/20 border border-red-500/30 rounded-xl backdrop-blur-sm">
+            <div className="flex items-center">
+              <span className="text-red-300">Erreur: {errors.companies}</span>
+            </div>
+          </div>
+        )}
+
         {/* Form Modal */}
         {showForm && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
@@ -140,9 +222,11 @@ const Admin = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-3xl"></div>
               <div className="relative">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-white">Ajouter une entreprise</h2>
+                  <h2 className="text-2xl font-bold text-white">
+                    {editingCompany ? 'Modifier l\'entreprise' : 'Ajouter une entreprise'}
+                  </h2>
                   <button
-                    onClick={() => setShowForm(false)}
+                    onClick={handleCancel}
                     className="text-white/60 hover:text-white transition-colors"
                   >
                     ✕
@@ -164,8 +248,8 @@ const Admin = () => {
                           placeholder="Nom de l'entreprise"
                         />
                       </div>
-                      {errors.name && (
-                        <p className="text-red-400 text-sm mt-1">{errors.name.message}</p>
+                      {formErrors.name && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.name.message}</p>
                       )}
                     </div>
 
@@ -188,8 +272,8 @@ const Admin = () => {
                           placeholder="contact@entreprise.com"
                         />
                       </div>
-                      {errors.email && (
-                        <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>
+                      {formErrors.email && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.email.message}</p>
                       )}
                     </div>
 
@@ -216,7 +300,7 @@ const Admin = () => {
                         <GlobeAltIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-300" />
                         <select
                           {...register('country', { required: 'Le pays est requis' })}
-                          className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all duration-300"
+                          className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-gray-400 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all duration-300"
                         >
                           <option value="">Sélectionner un pays</option>
                           <option value="France">France</option>
@@ -226,8 +310,8 @@ const Admin = () => {
                           <option value="Luxembourg">Luxembourg</option>
                         </select>
                       </div>
-                      {errors.country && (
-                        <p className="text-red-400 text-sm mt-1">{errors.country.message}</p>
+                      {formErrors.country && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.country.message}</p>
                       )}
                     </div>
 
@@ -239,7 +323,7 @@ const Admin = () => {
                         <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-300" />
                         <select
                           {...register('sector', { required: 'Le secteur est requis' })}
-                          className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all duration-300"
+                          className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-gray-400 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all duration-300"
                         >
                           <option value="">Sélectionner un secteur</option>
                           <option value="Technologie">Technologie</option>
@@ -252,8 +336,8 @@ const Admin = () => {
                           <option value="Commerce">Commerce</option>
                         </select>
                       </div>
-                      {errors.sector && (
-                        <p className="text-red-400 text-sm mt-1">{errors.sector.message}</p>
+                      {formErrors.sector && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.sector.message}</p>
                       )}
                     </div>
 
@@ -271,21 +355,58 @@ const Admin = () => {
                         />
                       </div>
                     </div>
+
+                    {/* Champ pour le statut actif (seulement en mode édition) */}
+                    {editingCompany && (
+                      <div className="md:col-span-2">
+                        <label className="block text-blue-200 text-sm font-medium mb-2">
+                          Statut de l'entreprise
+                        </label>
+                        <div className="flex items-center space-x-4">
+                          <label className="flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              {...register('isActive')}
+                              defaultChecked={editingCompany.isActive === true}
+                              className="sr-only"
+                            />
+                            <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                              editingCompany.isActive === true ? 'bg-green-500' : 'bg-gray-400'
+                            }`}>
+                              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                editingCompany.isActive === true ? 'translate-x-6' : 'translate-x-1'
+                              }`} />
+                            </div>
+                            <span className="ml-3 text-blue-200">
+                              {editingCompany.isActive === true ? '🟢 Actif' : '🟡 En attente'}
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex justify-end space-x-4 pt-6">
                     <button
                       type="button"
-                      onClick={() => setShowForm(false)}
+                      onClick={handleCancel}
                       className="px-6 py-3 text-blue-200 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300"
                     >
                       Annuler
                     </button>
                     <button
                       type="submit"
-                      className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                      disabled={isSubmitting}
+                      className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                     >
-                      Ajouter l'entreprise
+                      {isSubmitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          {editingCompany ? 'Modification en cours...' : 'Création en cours...'}
+                        </>
+                      ) : (
+                        editingCompany ? 'Modifier l\'entreprise' : 'Ajouter l\'entreprise'
+                      )}
                     </button>
                   </div>
                 </form>
@@ -302,82 +423,118 @@ const Admin = () => {
               Entreprises enregistrées
             </h2>
             <p className="text-blue-200">
-              {staticCompanies.length} entreprises actuellement enregistrées
+              {companies.length} entreprises actuellement enregistrées
             </p>
           </div>
 
           <div className="relative p-8">
-            <div className="grid gap-6">
-              {staticCompanies.map((company) => (
-                <div
-                  key={company.id}
-                  className="group relative bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-white/30 hover:bg-white/10 transition-all duration-500 hover:scale-[1.02]"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <div className="relative flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center mb-4">
-                        <h3 className="text-xl font-bold text-white mr-4">
-                          {company.name}
-                        </h3>
-                        <span className={`px-3 py-1 text-sm rounded-full font-medium ${
-                          company.status === 'active'
-                            ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-                            : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
-                        }`}>
-                          {company.status === 'active' ? '🟢 Actif' : '🟡 En attente'}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-blue-200">
-                        <div className="flex items-center">
-                          <EnvelopeIcon className="h-4 w-4 mr-2" />
-                          {company.email}
-                        </div>
-                        <div className="flex items-center">
-                          <PhoneIcon className="h-4 w-4 mr-2" />
-                          {company.phone}
-                        </div>
-                        <div className="flex items-center">
-                          <GlobeAltIcon className="h-4 w-4 mr-2" />
-                          {company.country}
-                        </div>
-                        <div className="flex items-center">
-                          <BuildingOfficeIcon className="h-4 w-4 mr-2" />
-                          {company.sector}
-                        </div>
-                      </div>
+            {/* Indicateur de chargement */}
+            {loading.companies && (
+              <div className="text-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <p className="text-blue-200">Chargement des entreprises...</p>
+              </div>
+            )}
 
-                      {company.website && (
-                        <div className="mt-4">
-                          <a
-                            href={company.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center text-blue-300 hover:text-blue-200 transition-colors"
-                          >
-                            <GlobeAltIcon className="h-4 w-4 mr-1" />
-                            {company.website}
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <button className="p-3 text-blue-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300">
-                        <EyeIcon className="h-5 w-5" />
-                      </button>
-                      <button className="p-3 text-blue-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300">
-                        <PencilIcon className="h-5 w-5" />
-                      </button>
-                      <button className="p-3 text-red-300 hover:text-red-200 hover:bg-red-500/10 rounded-xl transition-all duration-300">
-                        <TrashIcon className="h-5 w-5" />
-                      </button>
-                    </div>
+            {/* Contenu principal */}
+            {!loading.companies && companies.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl"></div>
+                  <div className="relative p-8 bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20">
+                    <BuildingOfficeIcon className="h-16 w-16 text-blue-300 mx-auto mb-6" />
+                    <h3 className="text-2xl font-bold text-white mb-4">
+                      Aucune entreprise enregistrée
+                    </h3>
+                    <p className="text-blue-200 mb-8 text-lg">
+                      Commencez par ajouter votre première entreprise
+                    </p>
+                    <button
+                      onClick={() => setShowForm(true)}
+                      className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                    >
+                      Ajouter une entreprise
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="grid gap-6">
+                {companies.map((company) => {
+                  console.log('🔍 Données de l\'entreprise:', company);
+                  return (
+                  <div
+                    key={company.id}
+                    className="group relative bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-white/30 hover:bg-white/10 transition-all duration-500 hover:scale-[1.02]"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="relative flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center mb-4">
+                          <h3 className="text-xl font-bold text-white mr-4">
+                            {company.name}
+                          </h3>
+                          <span className={`px-3 py-1 text-sm rounded-full font-medium ${
+                            company.isActive === true
+                              ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                              : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+                          }`}>
+                            {company.isActive === true ? '🟢 Actif' : '🟡 En attente'}
+                          </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-base text-blue-200">
+                          <div className="flex items-center">
+                            <EnvelopeIcon className="h-4 w-4 mr-2" />
+                            {company.email}
+                          </div>
+                          <div className="flex items-center">
+                            <PhoneIcon className="h-4 w-4 mr-2" />
+                            {getPhoneDisplay(company)}
+                          </div>
+                          <div className="flex items-center">
+                            <GlobeAltIcon className="h-4 w-4 mr-2" />
+                            {company.country}
+                          </div>
+                          <div className="flex items-center">
+                            <BuildingOfficeIcon className="h-4 w-4 mr-2" />
+                            {company.sector}
+                          </div>
+                        </div>
+
+                        {company.website && (
+                          <div className="mt-4 text-left">
+                            <a
+                              href={company.website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center text-base text-blue-300 hover:text-blue-200 transition-colors"
+                            >
+                              <GlobeAltIcon className="h-4 w-4 mr-1" />
+                              {company.website}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        <button 
+                          onClick={() => handleEdit(company)}
+                          className="p-3 text-blue-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300"
+                          title="Modifier l'entreprise"
+                        >
+                          <PencilIcon className="h-5 w-5" />
+                        </button>
+                        <button className="p-3 text-red-300 hover:text-red-200 hover:bg-red-500/10 rounded-xl transition-all duration-300">
+                          <TrashIcon className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              </div>
+            )}
           </div>
         </div>
       </div>

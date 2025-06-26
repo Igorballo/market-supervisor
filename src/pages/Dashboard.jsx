@@ -402,12 +402,9 @@ const Dashboard = () => {
       {showCreateModal && (
         <CreateCronModal
           isOpen={showCreateModal}
-          onClose={() => {
-            setShowCreateModal(false);
-            // Recharger les crons après la création
-            loadCrons();
-          }}
+          onClose={() => setShowCreateModal(false)}
           companyId={currentUser.id}
+          onSuccess={loadCrons}
         />
       )}
 

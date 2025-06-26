@@ -213,11 +213,51 @@ const useStore = create(
 
         try {
           const newCompany = await companyService.createCompany(companyData);
+          console.log('✅ Entreprise créée dans le store:', newCompany);
+          
+          // S'assurer que les données sont correctement formatées
+          const formattedCompany = {
+            ...newCompany,
+            telephone: newCompany.telephone || companyData.telephone || companyData.phone
+          };
+          
           set(state => ({
-            companies: [...state.companies, newCompany],
+            companies: [...state.companies, formattedCompany],
             loading: { ...state.loading, companies: false }
           }));
-          return newCompany;
+          return formattedCompany;
+        } catch (error) {
+          set(state => ({
+            loading: { ...state.loading, companies: false },
+            errors: { ...state.errors, companies: error.message }
+          }));
+          throw error;
+        }
+      },
+
+      updateCompany: async (id, companyData) => {
+        set(state => ({ 
+          loading: { ...state.loading, companies: true },
+          errors: { ...state.errors, companies: null }
+        }));
+
+        try {
+          const updatedCompany = await companyService.updateCompany(id, companyData);
+          console.log('✅ Entreprise mise à jour dans le store:', updatedCompany);
+          
+          // S'assurer que les données sont correctement formatées
+          const formattedCompany = {
+            ...updatedCompany,
+            telephone: updatedCompany.telephone || companyData.telephone || companyData.phone
+          };
+          
+          set(state => ({
+            companies: state.companies.map(company => 
+              company.id === id ? formattedCompany : company
+            ),
+            loading: { ...state.loading, companies: false }
+          }));
+          return formattedCompany;
         } catch (error) {
           set(state => ({
             loading: { ...state.loading, companies: false },
