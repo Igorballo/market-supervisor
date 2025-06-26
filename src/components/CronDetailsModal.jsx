@@ -180,7 +180,7 @@ const CronDetailsModal = ({ isOpen, onClose, cron }) => {
                               {result.title}
                             </h4>
                             <a
-                              href={result.source}
+                              href={result.url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
@@ -198,7 +198,7 @@ const CronDetailsModal = ({ isOpen, onClose, cron }) => {
                             <div className="flex items-center space-x-4 text-xs text-blue-300">
                               <span className="flex items-center">
                                 <CalendarIcon className="h-3 w-3 mr-1" />
-                                {formatDate(result.createdAt)}
+                                {formatDate(result.searchDate)}
                               </span>
                               {result.tags && result.tags.length > 0 && (
                                 <div className="flex items-center space-x-1">

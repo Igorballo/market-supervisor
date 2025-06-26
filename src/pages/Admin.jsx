@@ -236,7 +236,7 @@ const Admin = () => {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-blue-200 text-sm font-medium mb-2">
+                      <label className="block text-blue-200 text-left text-sm font-medium mb-2">
                         Nom de l'entreprise *
                       </label>
                       <div className="relative">
@@ -254,7 +254,7 @@ const Admin = () => {
                     </div>
 
                     <div>
-                      <label className="block text-blue-200 text-sm font-medium mb-2">
+                      <label className="block text-blue-200 text-left text-sm font-medium mb-2">
                         Email *
                       </label>
                       <div className="relative">
@@ -278,7 +278,7 @@ const Admin = () => {
                     </div>
 
                     <div>
-                      <label className="block text-blue-200 text-sm font-medium mb-2">
+                      <label className="block text-blue-200 text-left text-sm font-medium mb-2">
                         Téléphone
                       </label>
                       <div className="relative">
@@ -293,21 +293,26 @@ const Admin = () => {
                     </div>
 
                     <div>
-                      <label className="block text-blue-200 text-sm font-medium mb-2">
+                      <label className="block text-blue-200 text-left text-sm font-medium mb-2">
                         Pays *
                       </label>
                       <div className="relative">
                         <GlobeAltIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-300" />
                         <select
                           {...register('country', { required: 'Le pays est requis' })}
-                          className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-gray-400 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all duration-300"
+                          className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-gray-200 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all duration-300"
                         >
-                          <option value="">Sélectionner un pays</option>
-                          <option value="France">France</option>
-                          <option value="Belgique">Belgique</option>
-                          <option value="Suisse">Suisse</option>
-                          <option value="Canada">Canada</option>
-                          <option value="Luxembourg">Luxembourg</option>
+                          <option className="text-gray-800" value="">Sélectionner un pays</option>
+                          <option className="text-gray-800" value="Benin">Benin</option>
+                          <option className="text-gray-800" value="Togo">Togo</option>
+                          <option className="text-gray-800" value="Ghana">Ghana</option>
+                          <option className="text-gray-800" value="Nigeria">Nigeria</option>
+                          <option className="text-gray-800" value="Côte d'Ivoire">Côte d'Ivoire</option>
+                          <option className="text-gray-800" value="Sénégal">Sénégal</option>
+                          <option className="text-gray-800" value="Mali">Mali</option>
+                          <option className="text-gray-800" value="Burkina Faso">Burkina Faso</option>
+                          <option className="text-gray-800" value="Togo">Togo</option>
+                          <option className="text-gray-800" value="Luxembourg">Luxembourg</option>
                         </select>
                       </div>
                       {formErrors.country && (
@@ -316,24 +321,24 @@ const Admin = () => {
                     </div>
 
                     <div>
-                      <label className="block text-blue-200 text-sm font-medium mb-2">
+                      <label className="block text-blue-200 text-left text-sm font-medium mb-2">
                         Secteur d'activité *
                       </label>
                       <div className="relative">
                         <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-300" />
                         <select
                           {...register('sector', { required: 'Le secteur est requis' })}
-                          className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-gray-400 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all duration-300"
+                          className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-gray-200 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all duration-300"
                         >
-                          <option value="">Sélectionner un secteur</option>
-                          <option value="Technologie">Technologie</option>
-                          <option value="Marketing">Marketing</option>
-                          <option value="Finance">Finance</option>
-                          <option value="Santé">Santé</option>
-                          <option value="Éducation">Éducation</option>
-                          <option value="Énergie">Énergie</option>
-                          <option value="Transport">Transport</option>
-                          <option value="Commerce">Commerce</option>
+                          <option className="text-gray-800" value="">Sélectionner un secteur</option>
+                          <option className="text-gray-800" value="Technologie">Technologie</option>
+                          <option className="text-gray-800" value="Marketing">Marketing</option>
+                          <option className="text-gray-800" value="Finance">Finance</option>
+                          <option className="text-gray-800" value="Santé">Santé</option>
+                          <option className="text-gray-800" value="Éducation">Éducation</option>
+                          <option className="text-gray-800" value="Énergie">Énergie</option>
+                          <option className="text-gray-800" value="Transport">Transport</option>
+                          <option className="text-gray-800" value="Commerce">Commerce</option>
                         </select>
                       </div>
                       {formErrors.sector && (
@@ -359,7 +364,7 @@ const Admin = () => {
                     {/* Champ pour le statut actif (seulement en mode édition) */}
                     {editingCompany && (
                       <div className="md:col-span-2">
-                        <label className="block text-blue-200 text-sm font-medium mb-2">
+                        <label className="block text-blue-200 text-left text-sm font-medium mb-2">
                           Statut de l'entreprise
                         </label>
                         <div className="flex items-center space-x-4">
