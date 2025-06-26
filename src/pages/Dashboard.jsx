@@ -338,9 +338,9 @@ const Dashboard = () => {
                           <span className={`px-3 py-1 text-sm rounded-full font-medium ${
                             cron.isActive 
                               ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
-                              : 'bg-gray-500/20 text-gray-300 border border-gray-500/30'
+                              : 'bg-red-500/20 text-red-300 border border-red-500/30'
                           }`}>
-                            {cron.isActive ? '🟢 Actif' : '⚫ Inactif'}
+                            {cron.isActive ? '🟢 Actif' : '🔴 Inactif'}
                           </span>
                         </div>
                         

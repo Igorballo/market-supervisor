@@ -9,11 +9,13 @@ const CronDetailsModal = ({ isOpen, onClose, cron }) => {
 
   if (!isOpen || !cron) return null;
 
-  const cronResults = searchResults[cron.id] || [];
+
+  const cronResults = cron.searchResults;
   const totalPages = Math.ceil(cronResults.length / resultsPerPage);
   const startIndex = (currentPage - 1) * resultsPerPage;
   const endIndex = startIndex + resultsPerPage;
   const currentResults = cronResults.slice(startIndex, endIndex);
+
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {

@@ -18,20 +18,30 @@ const DashboardNav = ({ activeTab, onTabChange }) => {
     { id: 'settings', name: 'Paramètres', icon: CogIcon },
   ];
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    try {
+      console.log('🔄 Déconnexion en cours...');
+      await logout();
+      console.log('✅ Déconnexion réussie');
+      
+      // Rediriger vers la page de login
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('❌ Erreur lors de la déconnexion:', error);
+      // Rediriger quand même vers la page de login
+      window.location.href = '/login';
+    }
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo et nom */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1 className="text-xl font-bold text-gray-900">
-                Dowonou Space
+              <h1 className="text-xl font-bold uppercase bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                Market Supervisor
               </h1>
             </div>
           </div>
@@ -44,11 +54,10 @@ const DashboardNav = ({ activeTab, onTabChange }) => {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => onTabChange(tab.id)}
                     className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                       activeTab === tab.id
-                        ? 'text-blue-600 bg-blue-50'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        ? 'text-blue-400 bg-blue-500/20 border border-blue-500/30'
+                        : 'text-blue-200 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     <Icon className="h-5 w-5 mr-2" />
@@ -63,15 +72,15 @@ const DashboardNav = ({ activeTab, onTabChange }) => {
           <div className="flex items-center space-x-4">
             <div className="hidden md:block">
               <div className="text-sm">
-                <p className="text-gray-900 font-medium">{currentUser?.name}</p>
-                <p className="text-gray-500">{currentUser?.email}</p>
+                <p className="text-white font-medium">{currentUser?.name}</p>
+                <p className="text-blue-200">{currentUser?.email}</p>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center text-gray-500 hover:text-gray-700 text-sm"
+              className="flex items-center px-4 py-2 text-blue-200 hover:text-white hover:bg-red-500/20 border border-red-500/30 hover:border-red-400/50 rounded-xl transition-all duration-300 text-sm"
             >
-              <ArrowRightEndOnRectangleIcon className="h-5 w-5 mr-1" />
+              <ArrowRightEndOnRectangleIcon className="h-5 w-5 mr-2" />
               Déconnexion
             </button>
           </div>
@@ -88,8 +97,8 @@ const DashboardNav = ({ activeTab, onTabChange }) => {
                   onClick={() => onTabChange(tab.id)}
                   className={`flex items-center px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap transition-colors ${
                     activeTab === tab.id
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      ? 'text-blue-400 bg-blue-500/20 border border-blue-500/30'
+                      : 'text-blue-200 hover:text-white hover:bg-white/10'
                   }`}
                 >
                   <Icon className="h-4 w-4 mr-1" />
