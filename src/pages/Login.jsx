@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import useStore from '../store/useStore';
+import { authService } from '../services/authService';
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -14,42 +15,11 @@ import {
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useStore();
+  const { loginUser } = useStore();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
-  // Données statiques pour tester
-  const testUsers = [
-    {
-      email: 'admin@dowonou.com',
-      password: 'admin123',
-      role: 'admin',
-      name: 'Administrateur',
-      company: 'Dowonou Space',
-      sector: 'Technologie',
-      country: 'Togo'
-    },
-    {
-      email: 'techcorp@test.com',
-      password: 'tech123',
-      role: 'company',
-      name: 'TechCorp Solutions',
-      company: 'TechCorp Solutions',
-      sector: 'Technologie',
-      country: 'France'
-    },
-    {
-      email: 'marketing@test.com',
-      password: 'marketing123',
-      role: 'company',
-      name: 'Digital Marketing Pro',
-      company: 'Digital Marketing Pro',
-      sector: 'Marketing',
-      country: 'France'
-    }
-  ];
 
   const {
     register,
@@ -62,41 +32,56 @@ const Login = () => {
     setError('');
     setSuccess('');
 
-    // Simuler un délai de connexion
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      // Appel à l'API de connexion
+      const response = await authService.login({
+        email: data.email,
+        password: data.password
+      });
 
-    // Vérifier les identifiants de test
-    const user = testUsers.find(u => u.email === data.email && u.password === data.password);
+      // Traitement de la réponse
+      if (response.company) {
+        const userData = {
+          id: response.company.id || Date.now(),
+          email: response.company.email,
+          name: response.company.name,
+          company: response.company.company,
+          sector: response.company.sector,
+          country: response.company.country,
+          role: response.company.role
+        };
 
-    if (user) {
-      // Simuler une connexion réussie
-      const userData = {
-        id: Date.now(),
-        email: user.email,
-        name: user.name,
-        company: user.company,
-        sector: user.sector,
-        country: user.country,
-        role: user.role
-      };
+        console.log('Connexion réussie pour:', userData);
+        
+        // Mettre à jour le store
+        loginUser(userData);
+        
+        // Attendre que le store soit mis à jour
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        setSuccess('Connexion réussie ! Redirection...');
+        
+        // Délai plus long pour la redirection
+        setTimeout(() => {
+          console.log('Redirection vers:', userData.role === 'admin' ? '/admin' : '/dashboard');
+          console.log('État du store après connexion:', useStore.getState());
+          
+          if (userData.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/dashboard');
+          }
+        }, 1500);
+      } else {
+        setError('Réponse invalide du serveur');
+      }
 
-      console.log('Connexion réussie pour:', userData);
-      login(userData);
-      setSuccess('Connexion réussie ! Redirection...');
-      
-      setTimeout(() => {
-        console.log('Redirection vers:', user.role === 'admin' ? '/admin' : '/dashboard');
-        if (user.role === 'admin') {
-          navigate('/admin');
-        } else {
-          navigate('/dashboard');
-        }
-      }, 800);
-    } else {
-      setError('Email ou mot de passe incorrect');
+    } catch (apiError) {
+      console.error('Erreur API:', apiError);
+      setError(apiError.message || 'Erreur de connexion');
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -121,7 +106,7 @@ const Login = () => {
                 </svg>
               </div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent mb-2">
-                Dowonou Space
+                Market Supervisor
               </h1>
               <p className="text-blue-200">
                 Connectez-vous à votre espace entreprise
@@ -222,14 +207,14 @@ const Login = () => {
             </form>
 
             {/* Test Accounts Info */}
-            <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+            {/* <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
               <h3 className="text-blue-200 font-medium mb-2">Comptes de test :</h3>
               <div className="space-y-2 text-sm text-blue-300">
                 <div><strong>Admin:</strong> admin@dowonou.com / admin123</div>
                 <div><strong>Entreprise 1:</strong> techcorp@test.com / tech123</div>
                 <div><strong>Entreprise 2:</strong> marketing@test.com / marketing123</div>
               </div>
-            </div>
+            </div> */}
 
             {/* Footer */}
             <div className="mt-8 text-center">

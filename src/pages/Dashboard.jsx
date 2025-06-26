@@ -25,6 +25,7 @@ const Dashboard = () => {
   const [showCronDetails, setShowCronDetails] = useState(false);
   const [selectedCron, setSelectedCron] = useState(null);
 
+  console.log("currentUser", currentUser);
   // Données statiques pour l'aperçu
   const [totalSearches] = useState(1247);
   const [activeCrons] = useState(8);
@@ -100,10 +101,23 @@ const Dashboard = () => {
 
   useEffect(() => {
     console.log('Dashboard - currentUser:', currentUser);
-    if (!currentUser) {
+    console.log('Dashboard - isAuthenticated:', useStore.getState().isAuthenticated);
+    
+    // Vérifier si l'utilisateur est connecté
+    if (!currentUser && !useStore.getState().isAuthenticated) {
       console.log('Pas d\'utilisateur connecté, redirection vers login');
       navigate('/login');
+      return;
     }
+    
+    // Si currentUser est null mais isAuthenticated est true, essayer de récupérer les données
+    if (!currentUser && useStore.getState().isAuthenticated) {
+      console.log('Utilisateur authentifié mais données manquantes, redirection vers login');
+      navigate('/login');
+      return;
+    }
+    
+    console.log('Utilisateur connecté:', currentUser);
   }, [currentUser, navigate]);
 
   const handleLogout = () => {

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { authService, companyService, cronService, searchResultService, dashboardService } from '../services';
 
 const useStore = create(
   persist(
@@ -7,6 +8,24 @@ const useStore = create(
       // État d'authentification
       isAuthenticated: false,
       currentUser: null,
+      
+      // États de chargement
+      loading: {
+        auth: false,
+        companies: false,
+        crons: false,
+        searchResults: false,
+        dashboard: false
+      },
+      
+      // États d'erreur
+      errors: {
+        auth: null,
+        companies: null,
+        crons: null,
+        searchResults: null,
+        dashboard: null
+      },
       
       // Liste des entreprises (pour l'admin)
       companies: [
@@ -113,22 +132,218 @@ const useStore = create(
           }
         ]
       },
+
+      // Données du dashboard
+      dashboardStats: null,
+      analytics: null,
       
-      // Actions
-      login: (userData) => {
+      // Actions d'authentification
+      login: async (credentials) => {
+        set(state => ({ 
+          loading: { ...state.loading, auth: true },
+          errors: { ...state.errors, auth: null }
+        }));
+
+        try {
+          const response = await authService.login(credentials);
+          set({
+            isAuthenticated: true,
+            currentUser: response.company || response.user,
+            loading: { ...get().loading, auth: false }
+          });
+          return response;
+        } catch (error) {
+          set(state => ({
+            loading: { ...state.loading, auth: false },
+            errors: { ...state.errors, auth: error.message }
+          }));
+          throw error;
+        }
+      },
+      
+      logout: async () => {
+        try {
+          await authService.logout();
+        } catch (error) {
+          console.error('Erreur lors de la déconnexion:', error);
+        } finally {
+          set({
+            isAuthenticated: false,
+            currentUser: null
+          });
+        }
+      },
+
+      // Action de login direct (pour utilisation depuis les composants)
+      loginUser: (userData) => {
         set({
           isAuthenticated: true,
           currentUser: userData
         });
       },
-      
-      logout: () => {
-        set({
-          isAuthenticated: false,
-          currentUser: null
-        });
+
+      // Actions pour les entreprises
+      fetchCompanies: async () => {
+        set(state => ({ 
+          loading: { ...state.loading, companies: true },
+          errors: { ...state.errors, companies: null }
+        }));
+
+        try {
+          const companies = await companyService.getCompanies();
+          set(state => ({
+            companies,
+            loading: { ...state.loading, companies: false }
+          }));
+          return companies;
+        } catch (error) {
+          set(state => ({
+            loading: { ...state.loading, companies: false },
+            errors: { ...state.errors, companies: error.message }
+          }));
+          throw error;
+        }
       },
-      
+
+      createCompany: async (companyData) => {
+        set(state => ({ 
+          loading: { ...state.loading, companies: true },
+          errors: { ...state.errors, companies: null }
+        }));
+
+        try {
+          const newCompany = await companyService.createCompany(companyData);
+          set(state => ({
+            companies: [...state.companies, newCompany],
+            loading: { ...state.loading, companies: false }
+          }));
+          return newCompany;
+        } catch (error) {
+          set(state => ({
+            loading: { ...state.loading, companies: false },
+            errors: { ...state.errors, companies: error.message }
+          }));
+          throw error;
+        }
+      },
+
+      // Actions pour les crons
+      fetchCrons: async () => {
+        set(state => ({ 
+          loading: { ...state.loading, crons: true },
+          errors: { ...state.errors, crons: null }
+        }));
+
+        try {
+          const crons = await cronService.getCrons();
+          set(state => ({
+            crons,
+            loading: { ...state.loading, crons: false }
+          }));
+          return crons;
+        } catch (error) {
+          set(state => ({
+            loading: { ...state.loading, crons: false },
+            errors: { ...state.errors, crons: error.message }
+          }));
+          throw error;
+        }
+      },
+
+      createCron: async (cronData) => {
+        set(state => ({ 
+          loading: { ...state.loading, crons: true },
+          errors: { ...state.errors, crons: null }
+        }));
+
+        try {
+          const newCron = await cronService.createCron(cronData);
+          set(state => ({
+            crons: {
+              ...state.crons,
+              [cronData.companyId]: [...(state.crons[cronData.companyId] || []), newCron]
+            },
+            loading: { ...state.loading, crons: false }
+          }));
+          return newCron;
+        } catch (error) {
+          set(state => ({
+            loading: { ...state.loading, crons: false },
+            errors: { ...state.errors, crons: error.message }
+          }));
+          throw error;
+        }
+      },
+
+      // Actions pour les résultats de recherche
+      fetchSearchResults: async (filters = {}) => {
+        set(state => ({ 
+          loading: { ...state.loading, searchResults: true },
+          errors: { ...state.errors, searchResults: null }
+        }));
+
+        try {
+          const results = await searchResultService.getSearchResults(filters);
+          set(state => ({
+            searchResults: results,
+            loading: { ...state.loading, searchResults: false }
+          }));
+          return results;
+        } catch (error) {
+          set(state => ({
+            loading: { ...state.loading, searchResults: false },
+            errors: { ...state.errors, searchResults: error.message }
+          }));
+          throw error;
+        }
+      },
+
+      // Actions pour le dashboard
+      fetchDashboardStats: async () => {
+        set(state => ({ 
+          loading: { ...state.loading, dashboard: true },
+          errors: { ...state.errors, dashboard: null }
+        }));
+
+        try {
+          const stats = await dashboardService.getDashboardStats();
+          set(state => ({
+            dashboardStats: stats,
+            loading: { ...state.loading, dashboard: false }
+          }));
+          return stats;
+        } catch (error) {
+          set(state => ({
+            loading: { ...state.loading, dashboard: false },
+            errors: { ...state.errors, dashboard: error.message }
+          }));
+          throw error;
+        }
+      },
+
+      fetchAnalytics: async (filters = {}) => {
+        set(state => ({ 
+          loading: { ...state.loading, dashboard: true },
+          errors: { ...state.errors, dashboard: null }
+        }));
+
+        try {
+          const analytics = await dashboardService.getAnalytics(filters);
+          set(state => ({
+            analytics,
+            loading: { ...state.loading, dashboard: false }
+          }));
+          return analytics;
+        } catch (error) {
+          set(state => ({
+            loading: { ...state.loading, dashboard: false },
+            errors: { ...state.errors, dashboard: error.message }
+          }));
+          throw error;
+        }
+      },
+
+      // Actions de fallback (pour les données statiques)
       addCompany: (company) => {
         const newCompany = {
           ...company,
@@ -182,6 +397,25 @@ const useStore = create(
                 : cron
             )
           }
+        }));
+      },
+
+      // Actions utilitaires
+      clearErrors: () => {
+        set(state => ({
+          errors: {
+            auth: null,
+            companies: null,
+            crons: null,
+            searchResults: null,
+            dashboard: null
+          }
+        }));
+      },
+
+      setLoading: (key, value) => {
+        set(state => ({
+          loading: { ...state.loading, [key]: value }
         }));
       }
     }),
