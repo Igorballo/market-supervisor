@@ -32,9 +32,9 @@ export const API_CONFIG = {
       GET_BY_ID: '/companies/:id',
     },
     CRONS: {
-      LIST: '/crons',
+      LIST: '/crons/company/:companyId',
       CREATE: '/crons',
-      UPDATE: '/crons/:id',
+      UPDATE: '/crons/:id/toggle-active',
       DELETE: '/crons/:id',
       GET_BY_ID: '/crons/:id',
       EXECUTE: '/crons/:id/execute',

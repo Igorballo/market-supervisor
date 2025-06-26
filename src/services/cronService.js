@@ -1,14 +1,25 @@
 // Service pour gérer les crons
 import { buildApiUrl, getAuthHeaders, API_CONFIG } from './apiConfig';
 
+// Fonction pour nettoyer les données du cron reçues de l'API
+const cleanCronData = (cronData) => {
+  const {
+    lastRunAt,
+    searchCount,
+    ...cleanData
+  } = cronData;
+  
+  return cleanData;
+};
+
 export const cronService = {
   /**
    * Récupérer la liste des crons
    * @returns {Promise<Array>}
    */
-  async getCrons() {
+  async getCrons(companyId) {
     try {
-      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.CRONS.LIST), {
+      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.CRONS.LIST, { companyId }), {
         method: 'GET',
         headers: getAuthHeaders(),
       });
@@ -18,7 +29,9 @@ export const cronService = {
         throw new Error(errorData.message || 'Erreur lors de la récupération des crons');
       }
 
-      return await response.json();
+      const data = await response.json();
+      // Nettoyer les données reçues
+      return Array.isArray(data) ? data.map(cleanCronData) : cleanCronData(data);
     } catch (error) {
       console.error('Erreur lors de la récupération des crons:', error);
       throw error;
@@ -43,7 +56,9 @@ export const cronService = {
         throw new Error(errorData.message || 'Erreur lors de la création du cron');
       }
 
-      return await response.json();
+      const data = await response.json();
+      // Nettoyer les données reçues
+      return cleanCronData(data);
     } catch (error) {
       console.error('Erreur lors de la création du cron:', error);
       throw error;
@@ -58,20 +73,39 @@ export const cronService = {
    */
   async updateCron(id, cronData) {
     try {
-      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.CRONS.UPDATE, { id }), {
-        method: 'PUT',
+      console.log('🔄 updateCron appelé avec:', { id, cronData });
+      
+      if (!id) {
+        throw new Error('ID du cron manquant');
+      }
+
+      const url = buildApiUrl(API_CONFIG.ENDPOINTS.CRONS.UPDATE, { id });
+      console.log('🔄 URL de mise à jour:', url);
+      
+      const response = await fetch(url, {
+        method: 'PATCH',
         headers: getAuthHeaders(),
         body: JSON.stringify(cronData),
       });
 
+      console.log('🔄 Réponse API status:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('❌ Erreur API:', errorData);
         throw new Error(errorData.message || 'Erreur lors de la mise à jour du cron');
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log('✅ Données reçues de l\'API:', data);
+      
+      // Nettoyer les données reçues
+      const cleanedData = cleanCronData(data);
+      console.log('✅ Données nettoyées:', cleanedData);
+      
+      return cleanedData;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du cron:', error);
+      console.error('❌ Erreur lors de la mise à jour du cron:', error);
       throw error;
     }
   },
@@ -117,7 +151,9 @@ export const cronService = {
         throw new Error(errorData.message || 'Erreur lors de la récupération du cron');
       }
 
-      return await response.json();
+      const data = await response.json();
+      // Nettoyer les données reçues
+      return cleanCronData(data);
     } catch (error) {
       console.error('Erreur lors de la récupération du cron:', error);
       throw error;

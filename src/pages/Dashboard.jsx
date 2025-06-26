@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/useStore';
+import { cronService } from '../services/cronService';
 import {
   ChartBarIcon,
   PlayIcon,
@@ -24,80 +25,106 @@ const Dashboard = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showCronDetails, setShowCronDetails] = useState(false);
   const [selectedCron, setSelectedCron] = useState(null);
+  const [userCrons, setUserCrons] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   console.log("currentUser", currentUser);
-  // Données statiques pour l'aperçu
-  const [totalSearches] = useState(1247);
-  const [activeCrons] = useState(8);
-  const [totalCrons] = useState(12);
-  
-  // Données statiques des crons
-  const [userCrons] = useState([
-    {
-      id: 1,
-      name: "Surveillance Concurrents Tech",
-      isActive: true,
-      createdAt: "2024-01-15",
-      searchCount: 156,
-      lastSearch: "2024-01-20",
-      tags: ["Technologie", "Concurrence", "IA"],
-      description: "Surveillance automatique des concurrents dans le secteur technologique",
-      frequency: "Quotidien",
-      keywords: ["intelligence artificielle", "machine learning", "startup tech"],
-      results: [
-        { title: "Nouvelle startup IA française", url: "https://example.com", date: "2024-01-20" },
-        { title: "Innovation en machine learning", url: "https://example.com", date: "2024-01-19" }
-      ]
-    },
-    {
-      id: 2,
-      name: "Veille Marketing Digital",
-      isActive: true,
-      createdAt: "2024-01-10",
-      searchCount: 89,
-      lastSearch: "2024-01-19",
-      tags: ["Marketing", "Digital", "Tendances"],
-      description: "Veille sur les nouvelles tendances du marketing digital",
-      frequency: "Hebdomadaire",
-      keywords: ["marketing digital", "tendances", "social media"],
-      results: [
-        { title: "Nouvelles tendances marketing 2024", url: "https://example.com", date: "2024-01-19" },
-        { title: "Stratégies social media", url: "https://example.com", date: "2024-01-18" }
-      ]
-    },
-    {
-      id: 3,
-      name: "Recherche Emploi IT",
-      isActive: false,
-      createdAt: "2024-01-05",
-      searchCount: 234,
-      lastSearch: "2024-01-15",
-      tags: ["Emploi", "IT", "Développement"],
-      description: "Surveillance des offres d'emploi en développement informatique",
-      frequency: "Quotidien",
-      keywords: ["développeur", "emploi", "informatique"],
-      results: [
-        { title: "Développeur React Senior", url: "https://example.com", date: "2024-01-15" },
-        { title: "Full Stack Developer", url: "https://example.com", date: "2024-01-14" }
-      ]
-    },
-    {
-      id: 4,
-      name: "Veille Fintech",
-      isActive: true,
-      createdAt: "2024-01-12",
-      searchCount: 67,
-      lastSearch: "2024-01-20",
-      tags: ["Fintech", "Finance", "Innovation"],
-      description: "Surveillance des innovations dans le secteur fintech",
-      frequency: "Hebdomadaire",
-      keywords: ["fintech", "innovation", "finance"],
-      results: [
-        { title: "Nouvelle solution de paiement", url: "https://example.com", date: "2024-01-20" },
-        { title: "Cryptomonnaies et régulation", url: "https://example.com", date: "2024-01-19" }
-      ]
+
+  // Charger les crons depuis l'API
+  const loadCrons = async () => {
+    setLoading(true);
+    setError('');
+
+    
+    
+    try {
+      console.log('Chargement des crons pour l\'utilisateur:', currentUser?.id);
+      const crons = await cronService.getCrons(currentUser?.id);
+      console.log('Crons récupérés:', crons);
+      setUserCrons(crons);
+    } catch (apiError) {
+      console.error('Erreur lors du chargement des crons:', apiError);
+      setError(apiError.message || 'Erreur lors du chargement des tâches');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  // Activer un cron
+  const activateCron = async (cronId) => {
+    try {
+      console.log('🔵 Activation du cron - ID:', cronId, 'Type:', typeof cronId);
+      
+      if (!cronId) {
+        throw new Error('ID du cron manquant');
+      }
+
+      // Appel à l'API pour activer le cron
+      const result = await cronService.updateCron(cronId, { isActive: true });
+      console.log('✅ Réponse API activation:', result);
+      
+      // Mettre à jour la liste locale
+      setUserCrons(prevCrons => 
+        prevCrons.map(cron => 
+          cron.id === cronId ? { ...cron, isActive: true } : cron
+        )
+      );
+      
+      console.log('✅ Cron activé avec succès');
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'activation:', error);
+      alert('Erreur lors de l\'activation: ' + error.message);
+    }
+  };
+
+  // Désactiver un cron
+  const deactivateCron = async (cronId) => {
+    try {
+      console.log('🔴 Désactivation du cron - ID:', cronId, 'Type:', typeof cronId);
+      
+      if (!cronId) {
+        throw new Error('ID du cron manquant');
+      }
+
+      // Appel à l'API pour désactiver le cron
+      const result = await cronService.updateCron(cronId, { isActive: false });
+      console.log('✅ Réponse API désactivation:', result);
+      
+      // Mettre à jour la liste locale
+      setUserCrons(prevCrons => 
+        prevCrons.map(cron => 
+          cron.id === cronId ? { ...cron, isActive: false } : cron
+        )
+      );
+      
+      console.log('✅ Cron désactivé avec succès');
+    } catch (error) {
+      console.error('❌ Erreur lors de la désactivation:', error);
+      alert('Erreur lors de la désactivation: ' + error.message);
+    }
+  };
+
+  // Fonction utilitaire pour formater les dates de manière sécurisée
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Date inconnue';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Date invalide';
+      }
+      return date.toLocaleDateString('fr-FR');
+    } catch (error) {
+      console.error('Erreur de formatage de date:', error);
+      return 'Date invalide';
+    }
+  };
+
+  // Calculer les statistiques
+  const totalSearches = userCrons.reduce((sum, cron) => sum + (cron.searchCount || 0), 0);
+  const activeCrons = userCrons.filter(cron => cron.isActive).length;
+  const totalCrons = userCrons.length;
 
   useEffect(() => {
     console.log('Dashboard - currentUser:', currentUser);
@@ -118,6 +145,11 @@ const Dashboard = () => {
     }
     
     console.log('Utilisateur connecté:', currentUser);
+    
+    // Charger les crons si l'utilisateur est connecté
+    if (currentUser) {
+      loadCrons();
+    }
   }, [currentUser, navigate]);
 
   const handleLogout = () => {
@@ -128,6 +160,33 @@ const Dashboard = () => {
   const handleCronClick = (cron) => {
     setSelectedCron(cron);
     setShowCronDetails(true);
+  };
+
+  const handleToggleCron = async (e, cron) => {
+    e.stopPropagation();
+    
+    console.log('🔄 Toggle cron - Cron complet:', cron);
+    console.log('🔄 Toggle cron - ID:', cron.id, 'Type:', typeof cron.id);
+    console.log('🔄 Toggle cron - isActive:', cron.isActive);
+    
+    if (!cron || !cron.id) {
+      console.error('❌ Cron invalide ou ID manquant:', cron);
+      alert('Erreur: Cron invalide');
+      return;
+    }
+    
+    try {
+      if (cron.isActive) {
+        console.log('🔄 Désactivation du cron ID:', cron.id);
+        await deactivateCron(cron.id);
+      } else {
+        console.log('🔄 Activation du cron ID:', cron.id);
+        await activateCron(cron.id);
+      }
+    } catch (error) {
+      console.error('❌ Erreur dans handleToggleCron:', error);
+      alert('Erreur lors du changement d\'état: ' + error.message);
+    }
   };
 
   if (!currentUser) {
@@ -224,7 +283,23 @@ const Dashboard = () => {
           </div>
 
           <div className="relative p-8">
-            {userCrons.length === 0 ? (
+            {/* Affichage des erreurs */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl backdrop-blur-sm">
+                <p className="text-red-300 text-sm">{error}</p>
+              </div>
+            )}
+
+            {/* Indicateur de chargement */}
+            {loading && (
+              <div className="text-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <p className="text-blue-200">Chargement des tâches...</p>
+              </div>
+            )}
+
+            {/* Contenu principal */}
+            {!loading && userCrons.length === 0 ? (
               <div className="text-center py-16">
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl"></div>
@@ -272,22 +347,22 @@ const Dashboard = () => {
                         <div className="flex items-center space-x-8 text-sm text-blue-200 mb-4">
                           <span className="flex items-center">
                             <CalendarIcon className="h-4 w-4 mr-2" />
-                            Créé le {new Date(cron.createdAt).toLocaleDateString('fr-FR')}
+                            Créé le {formatDate(cron.createdAt)}
                           </span>
-                          <span className="flex items-center">
+                           <span className="flex items-center">
                             <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
-                            {cron.searchCount} recherches
+                            {cron.searchCount || 0} recherches
                           </span>
                           {cron.lastSearch && (
                             <span className="flex items-center">
                               <ClockIcon className="h-4 w-4 mr-2" />
-                              Dernière: {new Date(cron.lastSearch).toLocaleDateString('fr-FR')}
+                              Dernière: {formatDate(cron.lastSearch)}
                             </span>
                           )}
                         </div>
 
                         <div className="flex flex-wrap gap-2">
-                          {cron.tags.map((tag, index) => (
+                          {cron.tags && cron.tags.map((tag, index) => (
                             <span
                               key={index}
                               className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-200 border border-blue-500/30"
@@ -298,14 +373,13 @@ const Dashboard = () => {
                           ))}
                         </div>
                       </div>
+
                       
                       <div className="flex items-center space-x-3">
                         <button
                           className="p-3 text-blue-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Toggle cron status
-                          }}
+                          onClick={(e) => handleToggleCron(e, cron)}
+                          title={cron.isActive ? 'Pause' : 'Activer'}
                         >
                           {cron.isActive ? (
                             <PauseIcon className="h-6 w-6" />
@@ -328,7 +402,11 @@ const Dashboard = () => {
       {showCreateModal && (
         <CreateCronModal
           isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
+          onClose={() => {
+            setShowCreateModal(false);
+            // Recharger les crons après la création
+            loadCrons();
+          }}
           companyId={currentUser.id}
         />
       )}

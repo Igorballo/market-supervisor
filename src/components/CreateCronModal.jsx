@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { XMarkIcon, PlusIcon, SparklesIcon, RocketLaunchIcon, TagIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PlusIcon, SparklesIcon, RocketLaunchIcon, TagIcon, WrenchScrewdriverIcon, BeakerIcon } from '@heroicons/react/24/outline';
 import useStore from '../store/useStore';
+import { cronService } from '../services/cronService';
+import { testApiConnection, testCronCreationWithDifferentPayloads } from '../services/testApi';
 
 const CreateCronModal = ({ isOpen, onClose, companyId }) => {
-  const { addCron } = useStore();
+  const { currentUser, createCron } = useStore();
   const [tags, setTags] = useState([]);
   const [newTag, setNewTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [isTestingApi, setIsTestingApi] = useState(false);
+  const [isTestingPayloads, setIsTestingPayloads] = useState(false);
 
   const {
     register,
@@ -27,24 +32,97 @@ const CreateCronModal = ({ isOpen, onClose, companyId }) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
+  const testApi = async () => {
+    setIsTestingApi(true);
+    try {
+      const isConnected = await testApiConnection();
+      if (isConnected) {
+        alert('✅ API accessible !');
+      } else {
+        alert('❌ API non accessible. Vérifiez votre backend.');
+      }
+    } catch (error) {
+      alert('❌ Erreur lors du test: ' + error.message);
+    } finally {
+      setIsTestingApi(false);
+    }
+  };
+
+  const testPayloads = async () => {
+    setIsTestingPayloads(true);
+    try {
+      await testCronCreationWithDifferentPayloads();
+      alert('🧪 Tests terminés ! Vérifiez la console pour les résultats.');
+    } catch (error) {
+      alert('❌ Erreur lors des tests: ' + error.message);
+    } finally {
+      setIsTestingPayloads(false);
+    }
+  };
+
   const onSubmit = async (data) => {
     if (tags.length === 0) {
-      alert('Veuillez ajouter au moins un tag');
+      setError('Veuillez ajouter au moins un tag');
       return;
     }
 
     setIsSubmitting(true);
+    setError('');
+
     try {
-      addCron({
-        companyId,
-        name: data.name,
-        tags
+      // Préparer les données du cron - payload minimaliste
+      const cronData = {
+        name: data.name.trim(),
+        tags: tags,
+        companyId: companyId || currentUser?.id,
+        description: data.description ? data.description.trim() : `Tâche automatisée: ${data.name.trim()}`
+      };
+
+      console.log('Création du cron avec les données:', cronData);
+
+      // Appel à l'API pour créer le cron
+      const newCron = await cronService.createCron(cronData);
+      
+      console.log('Cron créé avec succès:', newCron);
+
+      // Mettre à jour le store local avec les données de l'API
+      await createCron({
+        ...newCron,
+        companyId: companyId || currentUser?.id
       });
+
       reset();
       setTags([]);
+      setError('');
       onClose();
-    } catch (error) {
-      console.error('Erreur lors de la création du Cron:', error);
+
+    } catch (apiError) {
+      console.error('Erreur lors de la création du Cron:', apiError);
+      
+      // Afficher l'erreur détaillée pour le debugging
+      if (apiError.message) {
+        setError(`Erreur: ${apiError.message}`);
+      } else {
+        setError('Erreur lors de la création de la tâche');
+      }
+      
+      // Fallback pour le développement
+      if (apiError.message && (apiError.message.includes('fetch') || apiError.message.includes('network'))) {
+        console.log('API non disponible, ajout local pour le développement');
+        createCron({
+          companyId: companyId || currentUser?.id,
+          name: data.name,
+          tags: tags,
+          id: Date.now(),
+          createdAt: new Date().toISOString().split('T')[0],
+          searchCount: 0,
+          lastSearch: null,
+          isActive: true
+        });
+        reset();
+        setTags([]);
+        onClose();
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -75,13 +153,46 @@ const CreateCronModal = ({ isOpen, onClose, companyId }) => {
                 <p className="text-blue-200 text-sm">Automatisez vos recherches avec l'IA</p>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 text-blue-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300"
-            >
-              <XMarkIcon className="h-6 w-6" />
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={testApi}
+                disabled={isTestingApi}
+                className="p-2 text-blue-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 disabled:opacity-50"
+                title="Tester la connectivité API"
+              >
+                {isTestingApi ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-300"></div>
+                ) : (
+                  <WrenchScrewdriverIcon className="h-5 w-5" />
+                )}
+              </button>
+              <button
+                onClick={testPayloads}
+                disabled={isTestingPayloads}
+                className="p-2 text-blue-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 disabled:opacity-50"
+                title="Tester les payloads"
+              >
+                {isTestingPayloads ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-300"></div>
+                ) : (
+                  <BeakerIcon className="h-5 w-5" />
+                )}
+              </button>
+              <button
+                onClick={onClose}
+                className="p-2 text-blue-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
           </div>
+
+          {/* Affichage des erreurs */}
+          {error && (
+            <div className="p-4 bg-red-500/20 border border-red-500/30 rounded-xl backdrop-blur-sm">
+              <p className="text-red-300 text-sm">{error}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Nom du Cron */}
@@ -98,6 +209,19 @@ const CreateCronModal = ({ isOpen, onClose, companyId }) => {
               {errors.name && (
                 <p className="mt-2 text-sm text-red-400">{errors.name.message}</p>
               )}
+            </div>
+
+            {/* Description */}
+            <div className="group">
+              <label className="block text-sm font-medium text-blue-200 mb-3">
+                Description (optionnel)
+              </label>
+              <textarea
+                {...register("description")}
+                rows="3"
+                className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 text-white placeholder-blue-300/50 backdrop-blur-sm resize-none"
+                placeholder="Décrivez le but de cette tâche automatisée..."
+              />
             </div>
 
             {/* Tags */}

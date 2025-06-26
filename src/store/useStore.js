@@ -356,19 +356,25 @@ const useStore = create(
       },
       
       addCron: (cron) => {
+        // Nettoyer les données pour éviter les conflits avec l'API
+        const {
+          lastRunAt,
+          ...cleanCron
+        } = cron;
+        
         const newCron = {
-          ...cron,
-          id: Date.now(),
-          createdAt: new Date().toISOString().split('T')[0],
-          searchCount: 0,
-          lastSearch: null,
-          isActive: true
+          ...cleanCron,
+          id: cleanCron.id || Date.now(),
+          createdAt: cleanCron.createdAt || new Date().toISOString(),
+          searchCount: cleanCron.searchCount || 0,
+          lastSearch: cleanCron.lastSearch || null,
+          isActive: cleanCron.isActive !== undefined ? cleanCron.isActive : true
         };
         
         set(state => ({
           crons: {
             ...state.crons,
-            [cron.companyId]: [...(state.crons[cron.companyId] || []), newCron]
+            [newCron.companyId]: [...(state.crons[newCron.companyId] || []), newCron]
           }
         }));
       },
